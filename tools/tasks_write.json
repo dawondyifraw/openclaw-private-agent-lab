@@ -1,0 +1,35 @@
+{
+    "name": "tasks_write",
+    "description": "Add or complete tasks for the current group.",
+    "endpoint": "http://localhost:18820",
+    "method": "POST",
+    "mappings": {
+        "add_task": "/task/add",
+        "done_task": "/task/done"
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "add_task",
+                    "done_task"
+                ]
+            },
+            "group_id": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "task_id": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "action",
+            "group_id"
+        ]
+    }
+}
