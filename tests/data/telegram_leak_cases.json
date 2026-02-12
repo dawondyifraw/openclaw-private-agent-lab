@@ -1,0 +1,142 @@
+[
+  {
+    "id": "unknown_command_static",
+    "text": "Unknown command. Use /help.",
+    "expect": "allow"
+  },
+  {
+    "id": "owner_unknown_command_debug",
+    "text": "Unknown command. Use /help, /status.",
+    "expect": "allow"
+  },
+  {
+    "id": "normal_reply_amharic",
+    "text": "ሰላም! እንዴት ልርዳዎ?",
+    "expect": "allow"
+  },
+  {
+    "id": "normal_reply_english",
+    "text": "Hello, how can I help?",
+    "expect": "allow"
+  },
+  {
+    "id": "diag_heartbeat",
+    "text": "HEARTBEAT REPORT",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_cron_gateway_disconnected",
+    "text": "CRON GATEWAY DISCONNECTED",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_gateway_closed",
+    "text": "Gateway closed (normal closure, no specific reason)",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_http_400",
+    "text": "400 status code (no body)",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_http_401",
+    "text": "401 status code",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_http_403",
+    "text": "403 status code",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_ws_localhost",
+    "text": "ws://127.0.0.1:8787",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_run_id",
+    "text": "Run ID: 123456",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_status_error",
+    "text": "Status: error",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_configuration_file",
+    "text": "Configuration file: /home/devbox/.openclaw/openclaw.json",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_bind_address",
+    "text": "Bind address: 127.0.0.1",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_no_data",
+    "text": "NO_DATA",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_no_permission",
+    "text": "NO_PERMISSION_OR_NO_CONFIGURED_PROVIDER",
+    "expect": "drop"
+  },
+  {
+    "id": "diag_novelty",
+    "text": "NOVELTY: The message seems incomplete.",
+    "expect": "drop"
+  },
+  {
+    "id": "tool_wrapper_reply",
+    "text": "<reply>Hello</reply>",
+    "expect": "drop"
+  },
+  {
+    "id": "tool_wrapper_send_message",
+    "text": "<sendMessage chat_id=\"1\" text=\"hello\">",
+    "expect": "drop"
+  },
+  {
+    "id": "identity_doc_url_user",
+    "text": "USER.md (http://user.md/)",
+    "expect": "drop"
+  },
+  {
+    "id": "identity_doc_url_heartbeat",
+    "text": "HEARTBEAT.md (http://heartbeat.md/)",
+    "expect": "drop"
+  },
+  {
+    "id": "persona_file_memory_policy",
+    "text": "MEMORY_POLICY.md",
+    "expect": "drop"
+  },
+  {
+    "id": "private_workspace_path_leak",
+    "text": "/home/devbox/.openclaw/workspace/agents/main/SOUL.md",
+    "expect": "drop"
+  },
+  {
+    "id": "wrapper_bot_action",
+    "text": "<bot_action>send_message</bot_action>",
+    "expect": "drop"
+  },
+  {
+    "id": "wrapper_begin_inference",
+    "text": "<begin_inference>Hello</end_inference>",
+    "expect": "drop"
+  },
+  {
+    "id": "wrapper_extra",
+    "text": "<extra>Today is February 12</extra>",
+    "expect": "drop"
+  },
+  {
+    "id": "wrapper_transcript_speech",
+    "text": "<transcript><speech><user>hi</user></speech></transcript>",
+    "expect": "drop"
+  }
+]

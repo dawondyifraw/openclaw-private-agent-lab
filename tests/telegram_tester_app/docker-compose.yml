@@ -1,0 +1,72 @@
+# Remove version line - it's obsolete
+
+services:
+  telegram-tester-app:
+    build: .
+    container_name: telegram-tester-app
+    environment:
+      - TG_API_ID=${TG_API_ID}
+      - TG_API_HASH=${TG_API_HASH}
+      - TG_BOT_ID=${TG_BOT_ID}
+      - TG_PHONE=${TG_PHONE}
+      - TG_PASSWORD=${TG_PASSWORD}
+      - TEST_GROUPS=${TEST_GROUPS}
+      - MAX_TESTS=${MAX_TESTS}
+      - TEST_BETWEEN_DELAY=${TEST_BETWEEN_DELAY}
+      - TG_TESTER_ID=${TG_TESTER_ID}
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount config files to /app/ where the code expects them
+      - ./config.yaml:/app/config.yaml:ro
+      - ./group_tests.yaml:/app/group_tests.yaml:ro
+      # Persistent volumes for sessions and reports
+      - telegram_sessions:/app/sessions
+      - telegram_reports:/app/test_reports
+      # Optional: mount custom test script
+      - ./telegram_test_automation.py:/app/telegram_test_automation.py:ro
+    restart: "no"
+    networks:
+      - test_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  telegram-bot-tester-scheduler:
+    build: .
+    container_name: telegram-bot-tester-scheduler
+    environment:
+      - TG_API_ID=${TG_API_ID}
+      - TG_API_HASH=${TG_API_HASH}
+      - TG_BOT_ID=${TG_BOT_ID}
+      - TG_PHONE=${TG_PHONE}
+      - TG_PASSWORD=${TG_PASSWORD}
+      - TEST_GROUPS=${TEST_GROUPS}
+      - MAX_TESTS=${MAX_TESTS}
+      - TEST_BETWEEN_DELAY=${TEST_BETWEEN_DELAY}
+      - TG_TESTER_ID=${TG_TESTER_ID}
+      - RUN_SCHEDULED=true
+      - SCHEDULE_INTERVAL=3600
+    volumes:
+      # Use EXACTLY the same mounts as the app
+      - ./config.yaml:/app/config.yaml:ro
+      - ./group_tests.yaml:/app/group_tests.yaml:ro
+      - telegram_sessions:/app/sessions
+      - telegram_reports:/app/test_reports
+    restart: unless-stopped
+    networks:
+      - test_network
+
+volumes:
+  telegram_sessions:
+    name: telegram_bot_sessions
+  telegram_reports:
+    name: telegram_bot_reports
+
+networks:
+  test_network:
+    name: telegram_test_network
+    driver: bridge

@@ -1,0 +1,80 @@
+# Telegram Bot Testing Configuration
+# Group configurations for automated testing
+
+telegram:
+  api_id: ${TG_API_ID}  # Or put actual ID here
+  api_hash: ${TG_API_HASH}  # Or put actual hash here
+  bot_id: ${TG_BOT_ID}
+  bot_username: moltbotd_bot
+  session_name: bot_tester
+
+groups:
+  assistant_dashboard:
+    id: TG_GROUP_ASSISTANT_DASHBOARD_ID
+    name: "Assistant Dashboard Group"
+    description: "Main dashboard for task/reminder management"
+    
+  anxiety_chat:
+    id: TG_GROUP_ANXIETY_CHAT_ID
+    name: "AnxietyChat"
+    description: "Supportive chat group"
+    
+  g_coder:
+    id: TG_GROUP_CODER_ID
+    name: "G-Coder"
+    description: "Programming help group"
+    
+  g_hello:
+    id: TG_GROUP_HELLO_ID
+    name: "G-Hello"
+    description: "Amharic-preferred general chat"
+    
+  merry_bot:
+    id: TG_GROUP_MERRY_ID
+    name: "Merry-Bot"
+    description: "Amharic-only group"
+
+# Forbidden patterns that should NEVER appear in responses
+forbidden_patterns:
+  # XML/HTML tags
+  - "<reply>"
+  - "<user>"
+  - "<assistant>"
+  - "<translation>"
+  - "<bot>"
+  - "<say>"
+  - "<inlineButton>"
+  - "<|im_start|>"
+  - "<|im_end|>"
+  
+  # File paths and internal docs
+  - "IDENTITY.md"
+  - "USER.md"
+  - "HEARTBEAT.md"
+  - "/home/devbox/.openclaw"
+  
+  # Special commands
+  - "NO_REPLY"
+  - "NO-REPLY"
+  
+  # Leakage patterns
+  - "re:tool_[a-z]+"
+  - "re:api[_-]key"
+  - "re:session[_-]key"
+  - "runtime diagnostics"
+  - "tool_schema"
+  - "runtime patch"
+  - "preflight check"
+  
+# Test timeouts (seconds)
+timeouts:
+  response_wait: 30
+  between_tests: 2
+  flood_wait_multiplier: 1.5
+
+# Report settings
+report:
+  output_dir: "./test_reports"
+  format: "html"
+  include_screenshots: false
+  detailed_logs: true
