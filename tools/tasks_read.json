@@ -1,0 +1,18 @@
+{
+    "name": "tasks_read",
+    "description": "Read active tasks for the current group.",
+    "endpoint": "http://localhost:18820/task/list",
+    "method": "POST",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "group_id": {
+                "type": "string",
+                "description": "The Telegram group ID"
+            }
+        },
+        "required": [
+            "group_id"
+        ]
+    }
+}
