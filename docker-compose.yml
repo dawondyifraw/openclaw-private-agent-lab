@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # Ollama - Local LLM Runtime (GPU-enabled)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Amharic Translation Service
+  amharic-translation:
+    build:
+      context: .
+      dockerfile: services/docker/amharic-translation/Dockerfile
+    container_name: amharic-translation
+    restart: unless-stopped
+    ports:
+      - "18790:18790"
+    volumes:
+      - ./services/amharic-translation:/app
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18790/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB - Vector Store
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ALLOW_RESET=TRUE
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RAG Service - Ingestion and Query API
+  rag-service:
+    build:
+      context: .
+      dockerfile: services/docker/rag-service/Dockerfile
+    container_name: rag-service
+    restart: unless-stopped
+    ports:
+      - "8811:18791"
+    volumes:
+      - ./services/rag-service:/app
+      - ./data/documents:/data/documents:ro
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
+      - EMBED_MODEL=nomic-embed-text
+    depends_on:
+      - chroma
+      - ollama
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18791/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Tool Runner Sandbox (Tier 1 tools only; no host exec from agents)
+  tool-runner:
+    build:
+      context: .
+      dockerfile: services/docker/tool-runner/Dockerfile
+    container_name: tool-runner
+    restart: unless-stopped
+    # Root filesystem is read-only; allow tmp files via tmpfs mounts.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      - WORKSPACES_ROOT=/workspaces
+    volumes:
+      # Workspace-only access; policy in tool-runner gates ro/rw behavior per request.
+      - ./workspaces:/workspaces:rw
+    networks:
+      - sandbox_net
+
+  # Proxy to expose tool-runner on host while keeping tool-runner itself on the internal-only network.
+  tool-runner-proxy:
+    image: nginxinc/nginx-unprivileged:alpine
+    container_name: tool-runner-proxy
+    restart: unless-stopped
+    ports:
+      - "18888:18888"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    volumes:
+      - ./services/tool-runner/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - tool-runner
+    networks:
+      - openclaw_support
+      - sandbox_net
+
+volumes:
+  ollama_models:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  openclaw_support:
+    driver: bridge
+  # Internal-only network: no internet egress, only service-to-service.
+  sandbox_net:
+    driver: bridge
+    internal: true
