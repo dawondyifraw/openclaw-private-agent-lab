@@ -1,0 +1,67 @@
+{
+    "name": "dashboard_tool",
+    "description": "Manage tasks and reminders for the current group dashboard. Use this tool for keeping track of items, setting reminders, and viewing the group status.",
+    "endpoint": "http://localhost:18820",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "mappings": {
+        "add_task": "/task/add",
+        "list_tasks": "/task/list",
+        "done_task": "/task/done",
+        "add_reminder": "/remind/add",
+        "list_reminders": "/remind/list",
+        "cancel_reminder": "/remind/cancel",
+        "get_dash": {
+            "path": "/dash",
+            "method": "GET"
+        }
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "add_task",
+                    "list_tasks",
+                    "done_task",
+                    "add_reminder",
+                    "list_reminders",
+                    "cancel_reminder",
+                    "get_dash"
+                ],
+                "description": "The dashboard action to perform"
+            },
+            "group_id": {
+                "type": "string",
+                "description": "The Telegram group ID (mandatory)"
+            },
+            "text": {
+                "type": "string",
+                "description": "Task or reminder text (required for add_task, add_reminder)"
+            },
+            "task_id": {
+                "type": "string",
+                "description": "Task ID (required for done_task)"
+            },
+            "reminder_id": {
+                "type": "string",
+                "description": "Reminder ID (required for cancel_reminder)"
+            },
+            "when_iso": {
+                "type": "string",
+                "description": "ISO timestamp for reminder (required for add_reminder)"
+            },
+            "user_id": {
+                "type": "string",
+                "description": "Optional user ID of the creator"
+            }
+        },
+        "required": [
+            "action",
+            "group_id"
+        ]
+    }
+}
