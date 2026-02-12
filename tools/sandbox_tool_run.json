@@ -1,0 +1,61 @@
+{
+  "name": "sandbox_tool_run",
+  "description": "Run Tier 1 tools inside the tool-runner sandbox (no host exec). This tool only supports workspace-scoped file operations and a strict allowlist of commands.",
+  "endpoint": "http://localhost:18888/run",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer ${SANDBOX_GUARD_TOKEN}"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "request_id": {
+        "type": "string",
+        "description": "Client-generated request id (optional)"
+      },
+      "agent": {
+        "type": "string",
+        "description": "Requesting agent id"
+      },
+      "scope": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string", "enum": ["telegram"]},
+          "chat_id": {"type": "string"},
+          "user_id": {"type": "string"}
+        },
+        "required": ["type", "chat_id"]
+      },
+      "tool": {
+        "type": "string",
+        "enum": ["file_read", "file_write", "shell_exec"],
+        "description": "Sandbox tool name"
+      },
+      "args": {
+        "type": "object",
+        "description": "Tool arguments (tool-specific)"
+      },
+      "policy": {
+        "type": "object",
+        "properties": {
+          "fs": {
+            "type": "object",
+            "properties": {
+              "mode": {"type": "string", "enum": ["ro", "rw"]}
+            }
+          },
+          "net": {
+            "type": "object",
+            "properties": {
+              "mode": {"type": "string", "enum": ["none", "allowlist"]},
+              "allow": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "timeout_s": {"type": "integer"}
+        }
+      }
+    },
+    "required": ["agent", "scope", "tool", "args"]
+  }
+}

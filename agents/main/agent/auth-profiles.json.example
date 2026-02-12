@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "profiles": {
+    "google:default": {
+      "provider": "google",
+      "type": "api_key"
+    },
+    "openrouter:default": {
+      "provider": "openrouter",
+      "type": "api_key"
+    },
+    "groq:default": {
+      "provider": "groq",
+      "type": "api_key"
+    },
+    "kimi-coding:default": {
+      "provider": "kimi-coding",
+      "type": "api_key"
+    },
+    "ollama:default": {
+      "provider": "ollama",
+      "type": "api_key",
+      "key": "ollama"
+    }
+  },
+  "lastGood": {
+    "google": "google:default",
+    "openrouter": "openrouter:default",
+    "groq": "groq:default",
+    "kimi-coding": "kimi-coding:default",
+    "ollama": "ollama:default"
+  },
+  "usageStats": {}
+}
