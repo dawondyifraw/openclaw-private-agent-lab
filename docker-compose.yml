@@ -1,0 +1,207 @@
+version: '3.8'
+
+services:
+  # Ollama - Local LLM Runtime (GPU-enabled)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      # Performance/stability knobs (configured via .env; defaults are conservative).
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
+      - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-15m}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Amharic Translation Service
+  amharic-translation:
+    build:
+      context: .
+      dockerfile: services/docker/amharic-translation/Dockerfile
+    container_name: amharic-translation
+    restart: unless-stopped
+    ports:
+      - "18790:18790"
+    volumes:
+      - ./services/amharic-translation:/app
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18790/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB - Vector Store
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ALLOW_RESET=TRUE
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RAG Service - Ingestion and Query API
+  rag-service:
+    build:
+      context: .
+      dockerfile: services/docker/rag-service/Dockerfile
+    container_name: rag-service
+    restart: unless-stopped
+    ports:
+      - "8811:18791"
+    volumes:
+      - ./services/rag-service:/app
+      - ./data/documents:/data/documents:ro
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
+      - EMBED_MODEL=nomic-embed-text
+    depends_on:
+      - chroma
+      - ollama
+    networks:
+      - openclaw_support
+      - sandbox_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18791/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Tool Runner Sandbox (Tier 1 tools only; no host exec from agents)
+  tool-runner:
+    image: openclaw-tool-runner:local
+    build:
+      context: .
+      dockerfile: services/docker/tool-runner/Dockerfile
+    container_name: tool-runner
+    restart: unless-stopped
+    # Root filesystem is read-only; allow tmp files via tmpfs mounts.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      # Auth token required for /run (provided by sandbox-guard only).
+      - TOOL_RUNNER_TOKEN=REDACTED
+      # Host path used ONLY for Docker bind mounts for short-lived runner-job containers.
+      - HOST_WORKSPACES_ROOT=/home/devbox/.openclaw/workspaces
+      - SANDBOX_NET_NAME=openclaw_sandbox_net
+      - JOB_IMAGE=openclaw-tool-runner:local
+    volumes:
+      # Required to spawn short-lived runner-job containers with mount-scoped workspaces.
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sandbox_net
+
+  # Sandbox Guard (Gateway-enforced): host-local entrypoint for sandbox_tool_run.
+  # Exposed on localhost, enforces allowlist + tool-tier policy, then calls internal tool-runner with auth.
+  sandbox-guard:
+    image: openclaw-sandbox-guard:local
+    build:
+      context: .
+      dockerfile: services/docker/tool-runner-proxy/Dockerfile
+    container_name: sandbox-guard
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    environment:
+      - SANDBOX_GUARD_TOKEN=REDACTED
+      - TOOL_RUNNER_URL=http://tool-runner:18889/run
+      - TOOL_RUNNER_TOKEN=REDACTED
+      - ALLOWLIST_PATH=/config/allowlist.json
+    volumes:
+      - ./services/docker/tool-runner-proxy/config/allowlist.json:/config/allowlist.json:ro
+    depends_on:
+      - tool-runner
+    networks:
+      - openclaw_support
+      - sandbox_net
+
+  # Host-exposed proxy for sandbox-guard. This is needed because Docker won't publish ports for
+  # containers attached to an internal-only network. The proxy is NOT on sandbox_net.
+  sandbox-guard-proxy:
+    image: nginxinc/nginx-unprivileged:alpine
+    container_name: sandbox-guard-proxy
+    restart: unless-stopped
+    ports:
+      - "18888:18888"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx:uid=101,gid=101,mode=700
+      - /var/run:uid=101,gid=101,mode=700
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 128m
+    cpus: 0.25
+    volumes:
+      - ./services/docker/tool-runner-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - sandbox-guard
+    networks:
+      - openclaw_support
+
+volumes:
+  ollama_models:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  openclaw_support:
+    driver: bridge
+  # Internal-only network: no internet egress, only service-to-service.
+  sandbox_net:
+    driver: bridge
+    internal: true

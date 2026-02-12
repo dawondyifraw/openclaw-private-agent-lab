@@ -1,0 +1,230 @@
+--- a/reply-DptDUVRg.js
++++ b/reply-DptDUVRg.js
+@@ -35297,6 +35297,90 @@
+ //#region src/telegram/bot/delivery.ts
+ const PARSE_ERR_RE = /can't parse entities|parse entities|find end of the entity/i;
+ const VOICE_FORBIDDEN_RE = /VOICE_MESSAGES_FORBIDDEN/;
++/* OPENCLAW_TELEGRAM_OUTBOUND_SANITIZER_V1_2
++   Final outbound sanitizer for Telegram. Framework-level enforcement:
++   - strip tool schema/tool-call explanations
++   - strip MEDIA paths (especially local absolute paths)
++   - keep output plain-text-safe for Telegram
++*/
++/* OPENCLAW_TELEGRAM_INTERNAL_ERROR_SUPPRESSOR_V1_2
++   Mandatory: suppress internal runtime/tool diagnostics in Telegram chats (groups + DMs).
++   Silence is preferred. This is enforcement, not prompting.
++*/
++/* OPENCLAW_TELEGRAM_SANITIZER_TELEMETRY_V1_0
++   Content-free telemetry only (drop reason + counters + hash prefix).
++*/
++function isTelegramInternalDiagnosticLeak(text) {
++	const t = String(text || "");
++	if (!t.trim()) return false;
++	return /tool call validation failed/i.test(t) || /attempted to call tool/i.test(t) || /not in request\.tools/i.test(t) || /gateway timeout/i.test(t) || /ws:\/\/127\.0\.0\.1/i.test(t) || /\bRun ID:\b/i.test(t) || /\bStatus:\s*error\b/i.test(t) || /commands\.restart/i.test(t) || /set commands\.restart=true/i.test(t);
++}
++function sanitizeTelegramOutboundText(text, opts = {}) {
++	const original = String(text || "");
++	let t = original;
++	let strippedCount = 0;
++	let dropReason = "NONE";
++	const countAndReplace = (regex, replacement) => {
++		const matches = t.match(regex);
++		if (matches && matches.length > 0) strippedCount += matches.length;
++		t = t.replace(regex, replacement);
++		return matches ? matches.length : 0;
++	};
++	// Global suppression layer (Telegram groups + DMs), unless explicitly overridden.
++	if (opts.suppressDiagnostics === true && isTelegramInternalDiagnosticLeak(t)) {
++		dropReason = /tool call validation failed|attempted to call tool|not in request\.tools/i.test(t) ? "RUNTIME_ERROR_LEAK" : "DIAGNOSTIC_LEAK";
++		const hash = sha256HexPrefix("", 10);
++		return {
++			text: "",
++			sanitizerApplied: true,
++			dropped: true,
++			dropReason,
++			strippedCount: Math.max(strippedCount, 1),
++			textHash: hash
++		};
++	}
++	// Drop explicit tool schema blocks if they appear.
++	const toolsHits = countAndReplace(/<tools>[\s\S]*?<\/tools>/gi, "");
++	const toolboxHits = countAndReplace(/<toolbox>[\s\S]*?<\/toolbox>/gi, "");
++	// Drop fenced code blocks that look like tool call JSON.
++	const toolJsonHits = countAndReplace(/```[\s\S]*?"name"\s*:\s*"[^"]+"[\s\S]*?(?:"arguments"\s*:|"toolCall")[\s\S]*?```/gi, "");
++	// Remove obvious tool-leak tokens.
++	countAndReplace(/\bfunction_call\b/gi, "");
++	countAndReplace(/\bsessions_send\b/gi, "");
++	// Strip common internal diagnostic lines (keep rest for DMs; groups are dropped above).
++	const runIdHits = countAndReplace(/^\s*-\s*\*\*Run ID:\*\*.*$/gmi, "");
++	const statusHits = countAndReplace(/^\s*-\s*\*\*Status:\*\*.*$/gmi, "");
++	const errMsgHits = countAndReplace(/^\s*-\s*\*\*Error Message:\*\*.*$/gmi, "");
++	const gwTargetHits = countAndReplace(/^\s*Gateway target:\s*.*$/gmi, "");
++	const srcHits = countAndReplace(/^\s*Source:\s*.*$/gmi, "");
++	const bindHits = countAndReplace(/^\s*Bind:\s*.*$/gmi, "");
++	const wsHits = countAndReplace(/ws:\/\/127\.0\.0\.1:\d+/gmi, "");
++	const timeoutHits = countAndReplace(/gateway timeout after \d+ms/gi, "");
++	const restartHits = countAndReplace(/set commands\.restart=true to enable\.?/gi, "");
++	// Strip stacktrace-ish lines.
++	countAndReplace(/^\s*at\s+.+$/gmi, "");
++	// Remove MEDIA lines (.MEDIA: is a common leak bypass for the parser).
++	const mediaHits = countAndReplace(/^\s*\.?MEDIA:\s*.*$/gmi, "");
++	// Collapse excessive blank lines.
++	t = t.replace(/\n{3,}/g, "\n\n");
++	t = t.trim();
++	if (!t) {
++		if (dropReason === "NONE") {
++			if (toolsHits + toolboxHits + toolJsonHits > 0) dropReason = "TOOL_SCHEMA_LEAK";
++			else if (mediaHits > 0) dropReason = "MEDIA_LEAK";
++			else if (runIdHits + statusHits + errMsgHits + gwTargetHits + srcHits + bindHits + wsHits + timeoutHits + restartHits > 0) dropReason = "RUNTIME_ERROR_LEAK";
++			else dropReason = "EMPTY_AFTER_STRIP";
++		}
++	}
++	return {
++		text: t,
++		sanitizerApplied: true,
++		dropped: !t,
++		dropReason,
++		strippedCount,
++		textHash: sha256HexPrefix(t, 10)
++	};
++}
+ async function deliverReplies(params) {
+ 	const { replies, chatId, runtime, bot, replyToMode, textLimit, thread, linkPreview, replyQuoteText } = params;
+ 	const chunkMode = params.chunkMode ?? "length";
+@@ -35323,7 +35407,35 @@
+ 	};
+ 	for (const reply of replies) {
+ 		const hasMedia = Boolean(reply?.mediaUrl) || (reply?.mediaUrls?.length ?? 0) > 0;
+-		if (!reply?.text && !hasMedia) {
++		const chatIdStr = String(chatId);
++		const isGroupChat = chatIdStr.startsWith("-");
++		const ownerId = String(process.env.OPENCLAW_OWNER_TELEGRAM_ID || "TG_OWNER_ID");
++		const debugEnabled = String(process.env.TELEGRAM_DEBUG || "").trim().toLowerCase();
++		const allowDiagnostics = (debugEnabled === "1" || debugEnabled === "true" || debugEnabled === "yes") && chatIdStr === ownerId;
++		const fallbackEnabled = ["1", "true", "yes"].includes(String(process.env.TELEGRAM_SAFE_FALLBACK || "").trim().toLowerCase());
++		const isLikelyCommand = typeof reply?.text === "string" && /^\s*\//.test(reply.text);
++		const sanitized = sanitizeTelegramOutboundText(reply?.text ?? "", { isGroup: isGroupChat, suppressDiagnostics: !allowDiagnostics });
++		const sanitizedText = sanitized.text;
++		const replyToId = replyToMode === "off" ? void 0 : resolveTelegramReplyId(reply.replyToId);
++		logVerbose(`[telegram-sanitize] chatId=${chatIdStr} agentId=${params?.agentId ?? "unknown"} sanitizerApplied=${sanitized.sanitizerApplied === true ? "true" : "false"} dropped=${sanitized.dropped ? "true" : "false"} dropReason=${sanitized.dropReason} stripped=${sanitized.strippedCount} hash=${sanitized.textHash}`);
++		if (!sanitizedText && !hasMedia) {
++			// Silence is a feature: suppress internal diagnostics without raising errors.
++			if (!allowDiagnostics && reply?.text && isTelegramInternalDiagnosticLeak(String(reply.text))) {
++				logVerbose("telegram: suppressed internal diagnostic reply");
++				if (fallbackEnabled && !isLikelyCommand) {
++					await sendTelegramText(bot, chatId, renderTelegramHtmlText("Temporary issue. Try again.", { tableMode: params.tableMode }), runtime, {
++						replyToMessageId: replyToId && (replyToMode === "all" || !hasReplied) ? replyToId : void 0,
++						replyQuoteText,
++						thread,
++						textMode: "html",
++						plainText: "Temporary issue. Try again.",
++						linkPreview
++					});
++					markDelivered();
++					if (replyToId && !hasReplied) hasReplied = true;
++				}
++				continue;
++			}
+ 			if (reply?.audioAsVoice) {
+ 				logVerbose("telegram reply has audioAsVoice without media/text; skipping");
+ 				continue;
+@@ -35331,12 +35443,11 @@
+ 			runtime.error?.(danger("reply missing text/media"));
+ 			continue;
+ 		}
+-		const replyToId = replyToMode === "off" ? void 0 : resolveTelegramReplyId(reply.replyToId);
+ 		const mediaList = reply.mediaUrls?.length ? reply.mediaUrls : reply.mediaUrl ? [reply.mediaUrl] : [];
+ 		const telegramData = reply.channelData?.telegram;
+ 		const replyMarkup = buildInlineKeyboard(telegramData?.buttons);
+ 		if (mediaList.length === 0) {
+-			const chunks = chunkText(reply.text || "");
++			const chunks = chunkText(sanitizedText || "");
+ 			for (let i = 0; i < chunks.length; i += 1) {
+ 				const chunk = chunks[i];
+ 				if (!chunk) continue;
+@@ -35367,9 +35478,9 @@
+ 			});
+ 			const fileName = media.fileName ?? (isGif ? "animation.gif" : "file");
+ 			const file = new InputFile(media.buffer, fileName);
+-			const { caption, followUpText } = splitTelegramCaption(isFirstMedia ? reply.text ?? void 0 : void 0);
++			const { caption, followUpText } = splitTelegramCaption(isFirstMedia ? (sanitizedText || void 0) : void 0);
+ 			const htmlCaption = caption ? renderTelegramHtmlText(caption, { tableMode: params.tableMode }) : void 0;
+-			if (followUpText) pendingFollowUpText = followUpText;
++			if (followUpText) pendingFollowUpText = sanitizeTelegramOutboundText(followUpText, { isGroup: isGroupChat, suppressDiagnostics: !allowDiagnostics }).text;
+ 			first = false;
+ 			const replyToMessageId = replyToId && (replyToMode === "all" || !hasReplied) ? replyToId : void 0;
+ 			const shouldAttachButtonsToMedia = isFirstMedia && replyMarkup && !followUpText;
+@@ -35429,7 +35540,7 @@
+ 								bot,
+ 								chatId,
+ 								runtime,
+-								text: fallbackText,
++								text: sanitizeTelegramOutboundText(fallbackText ?? "", { isGroup: isGroupChat, suppressDiagnostics: !allowDiagnostics }).text,
+ 								chunkText,
+ 								replyToId,
+ 								replyToMode,
+@@ -51758,6 +51869,15 @@
+ 		modelProvider: options?.modelProvider,
+ 		modelId: options?.modelId
+ 	});
++	/* OPENCLAW_TELEGRAM_TOOL_GOVERNANCE_V1_1
++	   Goal: group agents must not receive native/core tools by default.
++	   This prevents accidental tool use and schema leakage in Telegram groups.
++	*/
++	const __openclawRuntimeChannel = normalizeMessageChannel(options?.messageProvider);
++	const __openclawSessionKey = typeof options?.sessionKey === "string" ? options.sessionKey : "";
++	// Some flows (e.g. synthetic /new or /reset prompts) may not populate groupId; sessionKey is authoritative.
++	const __openclawIsTelegramGroup = __openclawRuntimeChannel === "telegram" && (options?.groupId != null || __openclawSessionKey.includes(":telegram:group:"));
++	const __openclawIsNonMainAgent = Boolean(agentId) && agentId !== "main";
+ 	const groupPolicy = resolveGroupToolPolicy({
+ 		config: options?.config,
+ 		sessionKey: options?.sessionKey,
+@@ -51900,9 +52020,22 @@
+ 			requesterAgentIdOverride: agentId
+ 		})
+ 	], options?.senderIsOwner === true);
+-	const coreToolNames = new Set(toolsByAuthorization.filter((tool) => !getPluginToolMeta(tool)).map((tool) => normalizeToolName(tool.name)).filter(Boolean));
++	// In Telegram groups, default-deny native/core tools for non-main agents. Commands (e.g. /tts)
++	// are handled by the command dispatcher, not by exposing tools to the model.
++	const toolsByAuthorizationScoped = __openclawIsTelegramGroup && __openclawIsNonMainAgent ? toolsByAuthorization.filter((tool) => {
++		const n = normalizeToolName(tool.name);
++		// Core/native tools that should never be visible to group agents by default.
++		if (n === "tts") return false;
++		if (n === "message") return false;
++		if (n === "sessions_send") return false;
++		if (n === "sessions_spawn") return false;
++		if (n === "sessions_list") return false;
++		if (n === "sessions_history") return false;
++		return true;
++	}) : toolsByAuthorization;
++	const coreToolNames = new Set(toolsByAuthorizationScoped.filter((tool) => !getPluginToolMeta(tool)).map((tool) => normalizeToolName(tool.name)).filter(Boolean));
+ 	const pluginGroups = buildPluginToolGroups({
+-		tools: toolsByAuthorization,
++		tools: toolsByAuthorizationScoped,
+ 		toolMeta: (tool) => getPluginToolMeta(tool)
+ 	});
+ 	const resolvePolicy = (policy, label) => {
+@@ -51919,7 +52052,7 @@
+ 	const groupPolicyExpanded = resolvePolicy(groupPolicy, "group tools.allow");
+ 	const sandboxPolicyExpanded = expandPolicyWithPluginGroups(sandbox?.tools, pluginGroups);
+ 	const subagentPolicyExpanded = expandPolicyWithPluginGroups(subagentPolicy, pluginGroups);
+-	const toolsFiltered = profilePolicyExpanded ? filterToolsByPolicy(toolsByAuthorization, profilePolicyExpanded) : toolsByAuthorization;
++	const toolsFiltered = profilePolicyExpanded ? filterToolsByPolicy(toolsByAuthorizationScoped, profilePolicyExpanded) : toolsByAuthorizationScoped;
+ 	const providerProfileFiltered = providerProfileExpanded ? filterToolsByPolicy(toolsFiltered, providerProfileExpanded) : toolsFiltered;
+ 	const globalFiltered = globalPolicyExpanded ? filterToolsByPolicy(providerProfileFiltered, globalPolicyExpanded) : providerProfileFiltered;
+ 	const globalProviderFiltered = globalProviderExpanded ? filterToolsByPolicy(globalFiltered, globalProviderExpanded) : globalFiltered;
+@@ -60692,6 +60825,14 @@
+ 		const result = await handler(params, allowTextCommands);
+ 		if (result) return result;
+ 	}
++	// Telegram safety: unknown slash commands should never fall through to LLM generation.
++	const normalizedCommandBody = params.command.commandBodyNormalized?.trim() ?? "";
++	if (allowTextCommands && normalizedCommandBody.startsWith("/")) {
++		return {
++			shouldContinue: false,
++			reply: { text: "Unknown command. Use /help." }
++		};
++	}
+ 	if (resolveSendPolicy({
+ 		cfg: params.cfg,
+ 		entry: params.sessionEntry,
