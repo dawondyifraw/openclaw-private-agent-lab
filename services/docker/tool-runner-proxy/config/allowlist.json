@@ -1,0 +1,7 @@
+{
+  "telegram": [
+    { "agent": "g-coder", "chat_id": "TG_GROUP_CODER_ID" },
+    { "agent": "g-hello", "chat_id": "TG_GROUP_HELLO_ID" }
+  ]
+}
+

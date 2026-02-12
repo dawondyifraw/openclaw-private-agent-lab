@@ -1,0 +1,17 @@
+{
+    "name": "reminders_read",
+    "description": "Read pending reminders for the current group.",
+    "endpoint": "http://localhost:18820/remind/list",
+    "method": "POST",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "group_id": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "group_id"
+        ]
+    }
+}
