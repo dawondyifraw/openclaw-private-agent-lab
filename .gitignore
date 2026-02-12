@@ -1,0 +1,65 @@
+# Git Ignore for OpenClaw
+# -----------------------------------------------------------------------------
+# Tracked vs runtime state (policy)
+# - Tracked in git: code, tests, docs, *.example templates
+# - Runtime-only: .env, openclaw.json, offsets, sessions, memory DBs, workspaces
+# -----------------------------------------------------------------------------
+
+# Ignore sessions and logs (runtime)
+**/sessions/*.jsonl
+**/sessions/*.json
+**/logs/*.log
+**/logs/*.json
+**/logs/*.txt
+
+# Ignore authentication profiles and keys (runtime)
+**/agent/auth-profiles.json
+**/agent/auth-profiles.json.bak
+openclaw.json
+
+# Ignore temporary storage (runtime)
+**/workspace/*
+memory/**
+workspaces/**
+!workspaces/.gitignore
+!workspaces/README.md
+
+# Runtime offsets / cursors (never commit)
+telegram/update-offset*.json
+!telegram/update-offset*.json.example
+
+# Runtime backups / editor droppings (never commit)
+**/*.bak
+**/*.bak.*
+**/*~*
+
+# Ignore python caches
+**/__pycache__/
+*.py[cod]
+*$py.class
+.env
+services/docker/.env
+identity/
+devices/
+
+# Ignore Agent Personas (prompts/configs)
+**/agent.yaml
+**/agent.yml
+**/persona.md
+**/system_prompt.md
+
+# Sensitive Telegram exports / audit artifacts (do not commit)
+datat/ChatExport_*/
+datat/ChatExport_20*/
+datat/combined_chat_issue_audit.json
+datat/combined_chat_story.json
+
+# Diagnostics / media artifacts that may contain sensitive content
+diagnostics/
+media/
+
+# Local per-agent scratch workspaces
+workspace-*/
+
+# Runtime dashboard data snapshots
+data/dashboard/*.json

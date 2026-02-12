@@ -1,0 +1,6 @@
+{
+    "name": "local_time",
+    "description": "Get the current local time and date from the system.",
+    "endpoint": "http://localhost:18820/utility/time",
+    "method": "GET"
+}
