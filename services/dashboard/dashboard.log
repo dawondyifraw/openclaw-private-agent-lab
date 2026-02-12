@@ -1,0 +1,9 @@
+nohup: ignoring input
+2026-02-10 04:55:29,185 - INFO - Reminder worker started.
+INFO:     Started server process [1018189]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:18820 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46790 - "GET /utility/time HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46802 - "POST /utility/calculate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46812 - "GET /admin/status HTTP/1.1" 200 OK
