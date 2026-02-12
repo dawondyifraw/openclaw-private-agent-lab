@@ -1,0 +1,18 @@
+{
+    "amharic_groups": [
+        "TG_GROUP_MERRY_ID",
+        "TG_GROUP_HELLO_ID"
+    ],
+    "routing": {
+        "TG_GROUP_MERRY_ID": {
+            "language": "amharic",
+            "agent": "merry-bot",
+            "translation_required": true
+        },
+        "TG_GROUP_HELLO_ID": {
+            "language": "amharic",
+            "agent": "g-hello",
+            "translation_required": true
+        }
+    }
+}
