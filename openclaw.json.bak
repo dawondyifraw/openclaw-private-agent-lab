@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.6-3",
+    "lastTouchedAt": "2026-02-09T04:16:02.564Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-09T02:05:10.500Z",
+    "lastRunVersion": "2026.2.6-3",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "kimi-coding:default": {
+        "provider": "kimi-coding",
+        "mode": "api_key"
+      },
+      "google:default": {
+        "provider": "google",
+        "mode": "api_key"
+      },
+      "groq:default": {
+        "provider": "groq",
+        "mode": "api_key"
+      },
+      "openrouter:default": {
+        "provider": "openrouter",
+        "mode": "api_key"
+      }
+    },
+    "order": {
+      "google": [
+        "google:default"
+      ],
+      "kimi-coding": [
+        "kimi-coding:default"
+      ],
+      "groq": [
+        "groq:default"
+      ],
+      "openrouter": [
+        "openrouter:default"
+      ]
+    },
+    "cooldowns": {
+      "billingBackoffHours": 1,
+      "failureWindowHours": 1
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "kimi-coding": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "k2p5",
+            "name": "Kimi K2.5",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 256000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "google": {
+        "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+        "auth": "api-key",
+        "api": "google-generative-ai",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "contextWindow": 1048576,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "groq": {
+        "baseUrl": "https://api.groq.com/openai/v1",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "llama-3.3-70b-versatile",
+            "name": "Llama 3.3 70B (Groq)",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "contextWindow": 128000,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "openrouter": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "google/gemini-2.0-flash-001",
+            "name": "Gemini 2.0 Flash (OpenRouter)",
+            "input": [
+              "text",
+              "image"
+            ],
+            "contextWindow": 1048576,
+            "maxTokens": 8192
+          },
+          {
+            "id": "cognitivecomputations/dolphin-mixtral-8x22b",
+            "name": "Dolphin Mixtral 8x22B (OpenRouter)",
+            "input": [
+              "text"
+            ],
+            "contextWindow": 65536,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "ollama": {
+        "baseUrl": "http://localhost:11434/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen2.5:14b",
+            "name": "Qwen 2.5 14B",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "contextWindow": 32768,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen2",
+            "name": "Qwen 2",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "contextWindow": 32768,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google/gemini-2.5-flash",
+        "fallbacks": [
+          "ollama/qwen2.5:14b"
+        ]
+      },
+      "models": {
+        "kimi-coding/k2p5": {
+          "alias": "Kimi K2.5"
+        },
+        "ollama/qwen2.5:14b": {
+          "alias": "Ollama Fallback"
+        },
+        "ollama/qwen2": {
+          "alias": "Qwen"
+        },
+        "groq/llama-3.3-70b-versatile": {
+          "alias": "Groq Llama 3.3"
+        },
+        "openrouter/google/gemini-2.0-flash-001": {
+          "alias": "OR Gemini 2.0"
+        },
+        "openrouter/cognitivecomputations/dolphin-mixtral-8x22b": {
+          "alias": "Dolphin Mixtral"
+        }
+      },
+      "workspace": "/home/devbox/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8,
+        "model": "qwen2.5:14b",
+        "thinking": "low"
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "Main Agent",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/main",
+        "model": {
+          "primary": "google/gemini-2.5-flash",
+          "fallbacks": [
+            "kimi-coding/k2p5",
+            "groq/llama-3.3-70b-versatile",
+            "openrouter/google/gemini-2.0-flash-001",
+            "ollama/qwen2.5:14b"
+          ]
+        },
+        "subagents": {
+          "model": "qwen2.5:14b",
+          "thinking": "low"
+        },
+        "tools": {
+          "profile": "full",
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "exec",
+            "web_search",
+            "web_fetch",
+            "browser",
+            "message",
+            "cron",
+            "gateway",
+            "sessions_spawn",
+            "memory_search",
+            "memory_get"
+          ]
+        }
+      }
+    ]
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "TELEGRAM_BOT_TOKEN_REDACTED",
+      "groups": {
+        "TG_GROUP_HELLO_ID": {
+          "requireMention": false,
+          "enabled": true,
+          "systemPrompt": "You are an AI assistant. This group uses Amharic language. Detect the language of incoming messages and respond in the same language. If the message is in Amharic, respond in Amharic. If in English, respond in English."
+        },
+        "TG_GROUP_MERRY_ID": {
+          "requireMention": false,
+          "enabled": true,
+          "systemPrompt": "You are an AI assistant. This group uses Amharic language. Detect the language of incoming messages and respond in the same language. If the message is in Amharic, respond in Amharic. If in English, respond in English."
+        }
+      },
+      "allowFrom": [
+        "telegram:group:TG_GROUP_HELLO_ID",
+        "telegram:group:TG_GROUP_CODER_ID",
+        "telegram:group:TG_GROUP_MERRY_ID",
+        "telegram:group:TG_GROUP_ANXIETY_CHAT_ID",
+        "telegram:group:-1005251231014"
+      ],
+      "groupAllowFrom": [
+        "TG_GROUP_HELLO_ID",
+        "TG_GROUP_CODER_ID",
+        "TG_GROUP_MERRY_ID",
+        "TG_GROUP_ANXIETY_CHAT_ID",
+        "-1005251231014"
+      ],
+      "groupPolicy": "allowlist",
+      "streamMode": "partial"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "ab26d3d8c1df8f4f8c43fc885d8e5acb7ca3c49aeb6dbc0f"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}

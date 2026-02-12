@@ -1,0 +1,26 @@
+# Git Ignore for OpenClaw
+# Ignore sessions and logs
+**/sessions/*.jsonl
+**/sessions/*.json
+**/logs/*.log
+**/logs/*.json
+**/logs/*.txt
+
+# Ignore authentication profiles and keys
+**/agent/auth-profiles.json
+**/agent/auth-profiles.json.bak
+openclaw.json
+
+# Ignore temporary storage
+**/workspace/*
+**/memory/*
+!**/memory/.gitkeep
+
+# Ignore python caches
+**/__pycache__/
+*.py[cod]
+*$py.class
+.env
+services/docker/.env
+identity/
+devices/
