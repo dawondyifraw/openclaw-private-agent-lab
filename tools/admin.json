@@ -1,0 +1,6 @@
+{
+    "name": "admin",
+    "description": "Get system administrative status.",
+    "endpoint": "http://localhost:18820/admin/status",
+    "method": "GET"
+}
