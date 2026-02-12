@@ -1,0 +1,47 @@
+{
+    "name": "calendar_read",
+    "description": "Read events from Google Calendar. Support timeframe-based listing and keyword search.",
+    "endpoint": "http://localhost:18821",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "mappings": {
+        "list_events": "/list",
+        "search_events": "/search"
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "list_events",
+                    "search_events"
+                ],
+                "description": "The calendar action to perform"
+            },
+            "range": {
+                "type": "string",
+                "enum": [
+                    "today",
+                    "week",
+                    "next"
+                ],
+                "description": "Timeframe for listing events"
+            },
+            "query": {
+                "type": "string",
+                "description": "Search query for events"
+            },
+            "max_results": {
+                "type": "integer",
+                "description": "Maximum number of results to return",
+                "default": 10
+            }
+        },
+        "required": [
+            "action"
+        ]
+    }
+}
