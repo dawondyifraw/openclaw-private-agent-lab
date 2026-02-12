@@ -1,0 +1,28 @@
+{
+    "name": "calendar",
+    "description": "Access Google Calendar events.",
+    "endpoint": "http://localhost:18821",
+    "method": "POST",
+    "mappings": {
+        "list_events": "/list",
+        "search_events": "/search"
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "list_events",
+                    "search_events"
+                ]
+            },
+            "range": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "action"
+        ]
+    }
+}
