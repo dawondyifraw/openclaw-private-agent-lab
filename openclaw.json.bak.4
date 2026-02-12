@@ -1,0 +1,484 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.6-3",
+    "lastTouchedAt": "2026-02-10T00:31:37.919Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-10T00:31:37.915Z",
+    "lastRunVersion": "2026.2.6-3",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "kimi-coding:default": {
+        "provider": "kimi-coding",
+        "mode": "api_key"
+      },
+      "google:default": {
+        "provider": "google",
+        "mode": "api_key"
+      },
+      "groq:default": {
+        "provider": "groq",
+        "mode": "api_key"
+      },
+      "openrouter:default": {
+        "provider": "openrouter",
+        "mode": "api_key"
+      }
+    },
+    "order": {
+      "google": [
+        "google:default"
+      ],
+      "kimi-coding": [
+        "kimi-coding:default"
+      ],
+      "groq": [
+        "groq:default"
+      ],
+      "openrouter": [
+        "openrouter:default"
+      ]
+    },
+    "cooldowns": {
+      "billingBackoffHours": 0.17,
+      "failureWindowHours": 0.17
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "kimi-coding": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "apiKey": "sk-kimi-TtmQ7odyvAIQcWjr4ZchF8q6o81CTnqqalD9yfLae7hD0omDoH02kKEXLdoKeWSM",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "k2p5",
+            "name": "Kimi K2.5",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 256000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "google": {
+        "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+        "apiKey": "GOOGLE_API_KEY_REDACTED",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 1048576,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "groq": {
+        "baseUrl": "https://api.groq.com/openai/v1",
+        "apiKey": "GROQ_API_KEY_REDACTED",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "llama-3.3-70b-versatile",
+            "name": "Llama 3.3 70B (Groq)",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 128000,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "openrouter": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": "OPENROUTER_API_KEY_REDACTED",
+        "auth": "api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "google/gemini-2.0-flash-001",
+            "name": "Gemini 2.0 Flash (OpenRouter)",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 1048576,
+            "maxTokens": 8192
+          },
+          {
+            "id": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+            "name": "Dolphin Mistral 24B (OpenRouter)",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 65536,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "ollama": {
+        "baseUrl": "http://localhost:11434/v1",
+        "apiKey": "ollama",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen2.5:14b",
+            "name": "Qwen 2.5 14B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen2.5-coder:14b",
+            "name": "Qwen 2.5 Coder 14B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 4096
+          },
+          {
+            "id": "mistral-nemo:12b",
+            "name": "Mistral Nemo 12B",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 128000,
+            "maxTokens": 4096
+          },
+          {
+            "id": "qwen2",
+            "name": "Qwen 2",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google/gemini-2.5-flash",
+        "fallbacks": [
+          "kimi-coding/k2p5",
+          "groq/llama-3.3-70b-versatile",
+          "openrouter/google/gemini-2.0-flash-001",
+          "ollama/qwen2.5:14b"
+        ]
+      },
+      "models": {
+        "kimi-coding/k2p5": {
+          "alias": "Kimi K2.5"
+        },
+        "ollama/qwen2.5:14b": {
+          "alias": "Ollama Fallback"
+        },
+        "ollama/qwen2": {
+          "alias": "Qwen"
+        },
+        "groq/llama-3.3-70b-versatile": {
+          "alias": "Groq Llama 3.3"
+        },
+        "openrouter/google/gemini-2.0-flash-001": {
+          "alias": "OR Gemini 2.0"
+        },
+        "openrouter/cognitivecomputations/dolphin-mistral-24b-venice-edition:free": {
+          "alias": "Dolphin Mistral"
+        }
+      },
+      "workspace": "/home/devbox/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8,
+        "model": "ollama/qwen2.5:14b"
+      }
+    },
+    "list": [
+      {
+        "id": "assistant",
+        "default": true,
+        "name": "assistant",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/assistant",
+        "model": "ollama/mistral-nemo:12b"
+      },
+      {
+        "id": "main",
+        "default": false,
+        "name": "Main Agent",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/main",
+        "model": {
+          "primary": "google/gemini-2.5-flash",
+          "fallbacks": [
+            "kimi-coding/k2p5",
+            "groq/llama-3.3-70b-versatile",
+            "openrouter/google/gemini-2.0-flash-001",
+            "ollama/qwen2.5:14b"
+          ]
+        },
+        "subagents": {
+          "model": "ollama/qwen2.5:14b"
+        },
+        "tools": {
+          "profile": "full",
+          "allow": [
+            "read",
+            "write",
+            "edit",
+            "exec",
+            "web_search",
+            "web_fetch",
+            "browser",
+            "message",
+            "cron",
+            "gateway",
+            "sessions_spawn",
+            "memory_search",
+            "memory_get"
+          ]
+        }
+      },
+      {
+        "id": "g-coder",
+        "name": "g-coder",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/g-coder",
+        "model": "ollama/qwen2.5-coder:14b"
+      },
+      {
+        "id": "g-hello",
+        "name": "g-hello",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/g-hello",
+        "model": "ollama/mistral-nemo:12b"
+      },
+      {
+        "id": "anxietychat",
+        "name": "anxietychat",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/anxietychat",
+        "model": "ollama/mistral-nemo:12b"
+      },
+      {
+        "id": "merry-bot",
+        "name": "merry-bot",
+        "workspace": "/home/devbox/.openclaw/workspace/agents/merry-bot",
+        "model": "ollama/mistral-nemo:12b"
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "agentId": "g-coder",
+      "match": {
+        "channel": "telegram",
+        "peer": {
+          "kind": "group",
+          "id": "TG_GROUP_CODER_ID"
+        }
+      }
+    },
+    {
+      "agentId": "g-hello",
+      "match": {
+        "channel": "telegram",
+        "peer": {
+          "kind": "group",
+          "id": "TG_GROUP_HELLO_ID"
+        }
+      }
+    },
+    {
+      "agentId": "anxietychat",
+      "match": {
+        "channel": "telegram",
+        "peer": {
+          "kind": "group",
+          "id": "TG_GROUP_ANXIETY_CHAT_ID"
+        }
+      }
+    },
+    {
+      "agentId": "merry-bot",
+      "match": {
+        "channel": "telegram",
+        "peer": {
+          "kind": "group",
+          "id": "TG_GROUP_MERRY_ID"
+        }
+      }
+    },
+    {
+      "agentId": "assistant",
+      "match": {
+        "channel": "telegram",
+        "peer": {
+          "kind": "group",
+          "id": "TG_GROUP_ASSISTANT_DASHBOARD_ID"
+        }
+      }
+    }
+  ],
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "TELEGRAM_BOT_TOKEN_REDACTED",
+      "groups": {
+        "TG_GROUP_HELLO_ID": {
+          "requireMention": true,
+          "enabled": true,
+          "systemPrompt": "You are Haymi (Lovely). Respond in Amharic preferred if user writes in English."
+        },
+        "TG_GROUP_MERRY_ID": {
+          "requireMention": true,
+          "enabled": true,
+          "systemPrompt": "You are Merry. Respond in Amharic."
+        },
+        "TG_GROUP_CODER_ID": {
+          "requireMention": true,
+          "enabled": true
+        },
+        "TG_GROUP_ANXIETY_CHAT_ID": {
+          "requireMention": true,
+          "enabled": true
+        },
+        "TG_GROUP_ASSISTANT_DASHBOARD_ID": {
+          "requireMention": true,
+          "enabled": true
+        }
+      },
+      "allowFrom": [
+        "telegram:group:TG_GROUP_HELLO_ID",
+        "telegram:group:TG_GROUP_CODER_ID",
+        "telegram:group:TG_GROUP_MERRY_ID",
+        "telegram:group:TG_GROUP_ANXIETY_CHAT_ID",
+        "telegram:group:TG_GROUP_ASSISTANT_DASHBOARD_ID",
+        "telegram:user:TG_OWNER_ID"
+      ],
+      "groupAllowFrom": [
+        "TG_GROUP_HELLO_ID",
+        "TG_GROUP_CODER_ID",
+        "TG_GROUP_MERRY_ID",
+        "TG_GROUP_ANXIETY_CHAT_ID",
+        "TG_GROUP_ASSISTANT_DASHBOARD_ID"
+      ],
+      "groupPolicy": "allowlist",
+      "streamMode": "partial"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "e40e05dcbbad099b4377e7fb67570afeefa4674a61a7a403"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}

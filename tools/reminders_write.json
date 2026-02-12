@@ -1,0 +1,38 @@
+{
+    "name": "reminders_write",
+    "description": "Add or cancel reminders for the current group.",
+    "endpoint": "http://localhost:18820",
+    "method": "POST",
+    "mappings": {
+        "add_reminder": "/remind/add",
+        "cancel_reminder": "/remind/cancel"
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "add_reminder",
+                    "cancel_reminder"
+                ]
+            },
+            "group_id": {
+                "type": "string"
+            },
+            "text": {
+                "type": "string"
+            },
+            "when_iso": {
+                "type": "string"
+            },
+            "reminder_id": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "action",
+            "group_id"
+        ]
+    }
+}
