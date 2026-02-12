@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.9",
+    "lastTouchedAt": "2026-02-10T00:00:00.000Z"
+  },
+  "env": {
+    "shellEnv": {
+      "enabled": true
+    }
+  },
+  "channels": {
+    "telegram": {
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [
+        "TG_GROUP_CODER_ID",
+        "TG_GROUP_HELLO_ID",
+        "TG_GROUP_ANXIETY_CHAT_ID",
+        "TG_GROUP_MERRY_ID",
+        "TG_GROUP_ASSISTANT_DASHBOARD_ID"
+      ],
+      "groups": {
+        "TG_GROUP_CODER_ID": { "requireMention": false },
+        "TG_GROUP_HELLO_ID": { "requireMention": false },
+        "TG_GROUP_ANXIETY_CHAT_ID": { "requireMention": false },
+        "TG_GROUP_MERRY_ID": { "requireMention": false },
+        "TG_GROUP_ASSISTANT_DASHBOARD_ID": { "requireMention": false }
+      }
+    }
+  },
+  "bindings": [
+    { "match": { "channel": "telegram", "peer": { "kind": "group", "id": "TG_GROUP_CODER_ID" } }, "agentId": "g-coder" },
+    { "match": { "channel": "telegram", "peer": { "kind": "group", "id": "TG_GROUP_HELLO_ID" } }, "agentId": "g-hello" },
+    { "match": { "channel": "telegram", "peer": { "kind": "group", "id": "TG_GROUP_ANXIETY_CHAT_ID" } }, "agentId": "anxietychat" },
+    { "match": { "channel": "telegram", "peer": { "kind": "group", "id": "TG_GROUP_MERRY_ID" } }, "agentId": "merry-bot" },
+    { "match": { "channel": "telegram", "peer": { "kind": "group", "id": "TG_GROUP_ASSISTANT_DASHBOARD_ID" } }, "agentId": "assistant" },
+    { "match": { "channel": "telegram", "peer": { "kind": "direct", "id": "TG_OWNER_ID" } }, "agentId": "main" }
+  ],
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}
+
