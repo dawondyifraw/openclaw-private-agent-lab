@@ -1,0 +1,6 @@
+{
+    "name": "diagnostics",
+    "description": "Run system health diagnostics.",
+    "endpoint": "http://localhost:18820/admin/diagnostics",
+    "method": "GET"
+}
