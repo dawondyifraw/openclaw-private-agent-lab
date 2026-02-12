@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Ollama - Local LLM Runtime (GPU-enabled)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - openclaw_support
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Amharic Translation Service
+  amharic-translation:
+    build:
+      context: .
+      dockerfile: services/docker/amharic-translation/Dockerfile
+    container_name: amharic-translation
+    restart: unless-stopped
+    ports:
+      - "18790:18790"
+    volumes:
+      - ./services/amharic-translation:/app
+    networks:
+      - openclaw_support
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18790/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB - Vector Store
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ALLOW_RESET=TRUE
+    networks:
+      - openclaw_support
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RAG Service - Ingestion and Query API
+  rag-service:
+    build:
+      context: .
+      dockerfile: services/docker/rag-service/Dockerfile
+    container_name: rag-service
+    restart: unless-stopped
+    ports:
+      - "8811:18791"
+    volumes:
+      - ./services/rag-service:/app
+      - ./data/documents:/data/documents:ro
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
+      - EMBED_MODEL=nomic-embed-text
+    depends_on:
+      - chroma
+      - ollama
+    networks:
+      - openclaw_support
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18791/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ollama_models:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  openclaw_support:
+    driver: bridge
