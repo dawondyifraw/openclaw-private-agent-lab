@@ -1,0 +1,6 @@
+# Prevent accidental credential disclosure in diffs for legacy/backups.
+# These files should not exist long-term; treat as binary so patch views don't render contents.
+openclaw.json.bak* -diff
+cron/jobs.json.bak -diff
+services/dashboard/dashboard.log -diff
+

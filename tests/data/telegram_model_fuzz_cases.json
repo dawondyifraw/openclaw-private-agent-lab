@@ -1,0 +1,122 @@
+[
+  {
+    "id": "fuzz_plain_english_ok",
+    "text": "Hello there, how can I help today?",
+    "expect": "allow"
+  },
+  {
+    "id": "fuzz_plain_amharic_ok",
+    "text": "ሰላም! እንዴት ልርዳዎ?",
+    "expect": "allow"
+  },
+  {
+    "id": "fuzz_plain_chinese_ok",
+    "text": "你好，我可以帮你做什么？",
+    "expect": "allow"
+  },
+  {
+    "id": "fuzz_mixed_user_noise_ok",
+    "text": "sdህስድፍልስድጅክፍ test 123",
+    "expect": "allow"
+  },
+  {
+    "id": "fuzz_no_permission_marker",
+    "text": "NO_PERMISSION_OR_NO_CONFIGURED_PROVIDER",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_no_input_marker",
+    "text": "NO INPUT - CANNOT PROCESS",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_no_data_marker",
+    "text": "NO_DATA",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_novelty_marker",
+    "text": "NOVELTY: The message appears incomplete.",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_no_tremolo_marker",
+    "text": "NO Tremolo",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_http_400_marker",
+    "text": "400 status code (no body)",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_heartbeat_marker",
+    "text": "HEARTBEAT REPORT",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_gateway_closed_marker",
+    "text": "Gateway closed (normal closure, no specific reason)",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_tool_wrapper_reply",
+    "text": "<_REPLY>Hey! How can I assist you today? 😊</_REPLY>",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_tool_wrapper_sendmessage",
+    "text": "<sendMessage chat_id=\"TG_GROUP_MERRY_ID\" text=\"hello\">",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_internal_function_error",
+    "text": "It seems there was an error in the function call because I provided both sessionKey and label.",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_permission_meta_sentence",
+    "text": "It seems the message or context provided doesn't include permissions for handling messages.",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_internal_transport_sentence",
+    "text": "Configuration file: /home/devbox/.openclaw/openclaw.json",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_bind_address_sentence",
+    "text": "Bind address: 127.0.0.1",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_no_reply_wrapper",
+    "text": "<NO_REPLY>",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_no_reply_wrapper_with_text",
+    "text": "<NO_REPLY>No content to respond to, as the message received was a single character.</NO_REPLY>",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_search_web_wrapper",
+    "text": "<searchWeb>(query=\"latest news\")</searchWeb>(NO_REPLY)",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_gateway_invalid_action",
+    "text": "It seems there was an error because the function gateway does not have a valid action set to \"send\".",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_internal_session_status_hint",
+    "text": "It looks like you're currently using the session_status function to get an overview of your session.",
+    "expect": "drop"
+  },
+  {
+    "id": "fuzz_tool_call_trace",
+    "text": "ImageContext\n{\"name\":\"tts\"}\n</tool_call>",
+    "expect": "drop"
+  }
+]
