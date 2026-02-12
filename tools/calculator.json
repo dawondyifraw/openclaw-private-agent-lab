@@ -1,0 +1,18 @@
+{
+    "name": "calculator",
+    "description": "Evaluate basic math expressions safely.",
+    "endpoint": "http://localhost:18820/utility/calculate",
+    "method": "POST",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "expression": {
+                "type": "string",
+                "description": "The math expression to evaluate (e.g. '2 + 2' or 'math.sqrt(16)')"
+            }
+        },
+        "required": [
+            "expression"
+        ]
+    }
+}

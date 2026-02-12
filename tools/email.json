@@ -1,0 +1,18 @@
+{
+    "name": "email",
+    "description": "Read or send emails (Service placeholder).",
+    "endpoint": "http://localhost:18820/utility/email_stub",
+    "method": "POST",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "list",
+                    "send"
+                ]
+            }
+        }
+    }
+}

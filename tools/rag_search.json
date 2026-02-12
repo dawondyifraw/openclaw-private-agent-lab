@@ -1,0 +1,77 @@
+{
+    "name": "rag_search",
+    "description": "Search the RAG knowledge base for relevant document chunks. Use only when document or knowledge base context is needed.",
+    "endpoint": "http://localhost:8811/query",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The search query to find relevant documents"
+            },
+            "top_k": {
+                "type": "integer",
+                "description": "Number of results to return",
+                "default": 5
+            },
+            "tags": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "Optional tags to filter results"
+            }
+        },
+        "required": [
+            "query"
+        ]
+    },
+    "output_schema": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string"
+            },
+            "results": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "document": {
+                            "type": "string",
+                            "description": "The text content of the matching chunk"
+                        },
+                        "metadata": {
+                            "type": "object",
+                            "properties": {
+                                "source": {
+                                    "type": "string",
+                                    "description": "Source file path"
+                                },
+                                "tags": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "distance": {
+                            "type": "number",
+                            "description": "Similarity distance (lower is better)"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "usage_policy": [
+        "Use only when document or knowledge base context is needed",
+        "Never fabricate sources - only cite sources from returned metadata",
+        "Always include source attribution when using retrieved information"
+    ]
+}
